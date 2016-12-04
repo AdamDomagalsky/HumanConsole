@@ -5,7 +5,7 @@ import os
 import ply.lex as lex
 import ply.yacc as yacc
 from ply.lex import TOKEN
-
+import time
 
 class Parser():
     def __init__(self):
@@ -25,8 +25,18 @@ class Parser():
 
         tokens = (
             'RUN',
-            'CLOSE'
+            'CLOSE',
+            'PROGRAM'
         )
+      #     'DOC',
+       #     'HTML',
+        #    'PAGE',
+         #   'PROGRAM'
+
+
+      #  t_WEBPAGE = r'https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{4,}'
+       # t_DOCFILE = r'.+\.\w{1,5}'
+      #  t_PROGRAM = r'\w{2,}'
 
         @TOKEN(self.loadToken("t_RUN"))
         def t_RUN(t):
@@ -39,26 +49,43 @@ class Parser():
         def t_error(t):
             t.lexer.skip(1)
 
-        lexer = lex.lex()
+        lex.lex()
 
         def p_exp(p):
-            ' expression  : RUN '
+            ' expression  : cmd source '
             p[0] = {"command": "move", "natural_input": self.natural_input}
+
+        def p_cmd(p):
+            ''' cmd : run
+                    | close '''
+
+        def p_run(p):
+            ' run : RUN '
+
+        def p_close(p):
+            ' close : CLOSE '
+
+        def p_source(p):
+            ' source : PROGRAM '
+
+
 
         def p_error(p):
             print("Nie rozumiem!")
-            with open('.hCMD.log', 'w+') as file:
-                file.write(self.natural_input)
+            with open('.hCMD.log', 'a') as file:
+                file.write(time.strftime("%d/%m %H:%M:%S") + "\tInput: " + self.natural_input + '\n')
 
         yacc.yacc()
 
         self.natural_input = input('> ').lower()
-        if (yacc.parse(self.natural_input) is None):
-            return {"command": "error"}
+        out = yacc.parse(self.natural_input)
+        if out:
+            return out
         else:
-            return yacc.parse(self.natural_input)
+            return 0
 
 
 while True:
     obj = Parser()
     print(obj.get())
+
