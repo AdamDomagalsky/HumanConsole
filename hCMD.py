@@ -26,17 +26,13 @@ class Parser():
         tokens = (
             'RUN',
             'CLOSE',
-            'PROGRAM'
+            'PROGRAM',
+            'DOC',
+            'HTML',
         )
-      #     'DOC',
-       #     'HTML',
-        #    'PAGE',
-         #   'PROGRAM'
 
-
-      #  t_WEBPAGE = r'https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{4,}'
-       # t_DOCFILE = r'.+\.\w{1,5}'
-      #  t_PROGRAM = r'\w{2,}'
+        t_HTML = r'www.\w+.\w{1,5}'
+        t_DOC = r'\w+.txt'
 
         @TOKEN(self.loadToken("t_RUN"))
         def t_RUN(t):
@@ -46,29 +42,56 @@ class Parser():
         def t_CLOSE(t):
             return t
 
+        @TOKEN(self.loadToken("t_PROGRAM"))
+        def t_PROGRAM(t):
+            return t
+
         def t_error(t):
             t.lexer.skip(1)
 
         lex.lex()
 
         def p_exp(p):
-            ' expression  : cmd source '
-            p[0] = {"command": "move", "natural_input": self.natural_input}
+            ''' expression  : cmd source
+                            | cmd
+                            | html
+                            | doc '''
+            print('p_exp')
 
         def p_cmd(p):
             ''' cmd : run
                     | close '''
+            print('p_cmd')
 
         def p_run(p):
             ' run : RUN '
+            print('p_run')
 
         def p_close(p):
             ' close : CLOSE '
+            self.cmd='kill'
+            print('p_close')
 
         def p_source(p):
-            ' source : PROGRAM '
+            ''' source : doc
+                        | html
+                        | program '''
 
+        def p_doc(p):
+            ' doc : DOC '
+            print('p_doc')
+            self.cmd='vim'
+            self.files = p[1]
 
+        def p_html(p):
+            ' html : HTML '
+            print('p_html')
+            self.cmd='sensible-browser'
+            self.files=p[1]
+
+        def p_program(p):
+            ' program : PROGRAM '
+            print('p_program')
 
         def p_error(p):
             print("Nie rozumiem!")
@@ -78,11 +101,9 @@ class Parser():
         yacc.yacc()
 
         self.natural_input = input('> ').lower()
-        out = yacc.parse(self.natural_input)
-        if out:
-            return out
-        else:
-            return 0
+        yacc.parse(self.natural_input)
+        return [ self.cmd, self.files ]
+
 
 
 while True:
