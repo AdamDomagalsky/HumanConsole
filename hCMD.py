@@ -15,6 +15,7 @@ class Parser():
         self.files = ""
         self.options = ""
 
+
     def loadToken(self, fileName):
         dirPath = os.path.dirname(os.path.realpath(__file__))
         dirPathTokens = os.path.join(dirPath, "tokens")
@@ -53,9 +54,11 @@ class Parser():
 
         def p_exp(p):
             ''' expression  : cmd source
+                            | cmd program
                             | cmd
                             | html
-                            | doc '''
+                            | doc
+                            | program '''
             print('p_exp')
 
         def p_cmd(p):
@@ -102,8 +105,7 @@ class Parser():
 
         self.natural_input = input('> ').lower()
         yacc.parse(self.natural_input)
-        return [ self.cmd, self.files ]
-
+        return { 'cmd':self.cmd, 'file':self.files, 'input':self.natural_input }
 
 
 while True:
