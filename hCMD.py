@@ -30,18 +30,14 @@ class Parser():
             'PROGRAM',
             'DOC',
             'HTML',
+            'GOOGLE'
         )
 
-        t_HTML = r'www.\w+.\w{1,5}'
-        t_DOC = r'\w+.txt'
-
-        @TOKEN(self.loadToken("t_RUN"))
-        def t_RUN(t):
-            return t
-
-        @TOKEN(self.loadToken("t_CLOSE"))
-        def t_CLOSE(t):
-            return t
+        t_HTML = r'((https?://|(w{3}?)|)\.?)\S+\.\w{1,4}\.?(\S+)'
+        t_DOC = r'\w+\.(txt|doc|docx|[tc]sv)'
+        t_RUN = r'run|open|uruchom|otw[oó]rz|wykonaj|wejd[zźż]'
+        t_CLOSE = r'close|zamknij|wy[lł][aą]cz|zabij'
+        t_GOOGLE = r'go{1,}gluj|wyszukaj|znajd[zżź]|wygo{1,}luj|szukaj'
 
         @TOKEN(self.loadToken("t_PROGRAM"))
         def t_PROGRAM(t):
@@ -54,16 +50,16 @@ class Parser():
 
         def p_exp(p):
             ''' expression  : cmd source
-                            | cmd program
-                            | cmd
                             | html
                             | doc
-                            | program '''
+                            | program
+                            | google '''
             print('p_exp')
 
         def p_cmd(p):
             ''' cmd : run
-                    | close '''
+                    | close
+                    | google'''
             print('p_cmd')
 
         def p_run(p):
@@ -74,6 +70,11 @@ class Parser():
             ' close : CLOSE '
             self.cmd='kill'
             print('p_close')
+
+        def p_google(p):
+            ' google : GOOGLE html'
+            self.cmd = 'sensible-browser'
+            self.files = 'google.com/search?q=' + self.files
 
         def p_source(p):
             ''' source : doc
@@ -110,5 +111,6 @@ class Parser():
 
 while True:
     obj = Parser()
-    print(obj.get())
+    out = obj.get()
+    print(out)
 
